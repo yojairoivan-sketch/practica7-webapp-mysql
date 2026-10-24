@@ -1,0 +1,36 @@
+services:
+  app:
+    build: .
+    container_name: practica7-app
+    ports:
+      - "8082:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: holamundo
+      DB_USER: app
+      DB_PASSWORD: app123
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    container_name: practica7-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: holamundo
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app123
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot123"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
